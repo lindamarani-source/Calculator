@@ -1,35 +1,78 @@
-function calculate(a, b) {
-    return {
-        addition: a + b,
-        multiplication: a * b,
-        division: a / b,
-        subtraction: a - b
+const display = document.querySelector('.calculator-display');
+const buttons = document.querySelectorAll('.calculator-buttons li');
+let expression = '';
+
+const operators = ['+', '-', '*', '/'];
+
+function updateDisplay(value) {
+    display.textContent = value;
+}
+
+function clearExpression() {
+    expression = '';
+    updateDisplay('0');
+}
+
+function appendValue(value) {
+    const lastChar = expression.slice(-1);
+
+    if (value === '0' && expression === '0') {
+        return;
+    }
+
+    if (operators.includes(value)) {
+        if (expression === '' || operators.includes(lastChar)) {
+            return;
+        }
+    }
+
+    if (expression === '0' && value !== '.' && !operators.includes(value)) {
+        expression = value;
+    } else {
+        expression += value;
+    }
+
+    updateDisplay(expression);
+}
+
+function calculateExpression() {
+    if (expression === '') {
+        return;
+    }
+
+    const lastChar = expression.slice(-1);
+    if (operators.includes(lastChar)) {
+        return;
+    }
+
+    try {
+        const result = Function(`"use strict"; return (${expression})`)();
+        expression = String(result);
+        updateDisplay(expression);
+    } catch (error) {
+        updateDisplay('Error');
+        expression = '';
     }
 }
 
-const result = (a, b) => {
-    return {
-        addition: a + b,
-        multiplication: a * b,
-        division: a / b,
-        subtraction: a - b
-    }
-}
+buttons.forEach(button => {
+    button.addEventListener('click', () => {
+        const value = button.textContent.trim();
 
-let history = [];
+        if (value === 'C') {
+            clearExpression();
+            return;
+        }
 
-function addToHistory(a, b) {
-    const calcResult = {
-        addition: a + b,
-        multiplication: a * b,
-        division: a / b,
-        subtraction: a - b
-    }
-    history.push(calcResult);
-    return calcResult;
-}
+        if (value === '=') {
+            calculateExpression();
+            return;
+        }
 
-// Example usage
-console.log(calculate(5, 3));
-console.log(addToHistory(5, 3));
-console.log(history);
+        appendValue(value);
+    });
+});
+
+clearExpression();
+
+
